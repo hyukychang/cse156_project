@@ -113,6 +113,10 @@ def main():
             start_time=start_time,
             end_time=end_time,
             description="This is a test event",
+            attendees=[
+                {"email": ""},
+                {"email": ""},
+            ],
         )
         # Get the events again
         events = google_calendar.get_events()
