@@ -1,5 +1,5 @@
 import os.path
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -10,6 +10,8 @@ from googleapiclient.errors import HttpError
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
 TOKEN_FILE = "token.json"
 CREDENTIAL_FILE = "credentials.json"
+
+AMERICA_LOS_ANGELES_TZ = "-08:00"
 
 
 class GoogleCalendar:
@@ -34,7 +36,16 @@ class GoogleCalendar:
 
         self.service = build("calendar", "v3", credentials=credential)
 
-    def get_events(
+    # booking appintment
+    # * BookingAppointment - name (model), time (model), email, appointment type (model), Handle conflicts
+    # * RescheduleAppointment - name (model), time (model), email, appointment type (model)
+    # * CheckAvailability - name (model), time (model), email, appointment type (model)
+    # * CancelAppointment - name (model), time (model), email, appointment type (model)
+    # "2025-02-27
+    # time format pm/am ->
+    # input : starttime -> endtime + 1 hour
+
+    def _get_events(
         self, calendar_id="primary", time_min: datetime = None, max_results=10
     ):
         now = datetime.now()
@@ -57,7 +68,24 @@ class GoogleCalendar:
         print(events)
         return events
 
-    def create_event(
+    def _is_available_at_time(self, start_time: datetime, end_time: datetime) -> bool:
+        events_result = (
+            self.service.events()
+            .list(
+                calendarId="primary",
+                timeMin=start_time.isoformat() + AMERICA_LOS_ANGELES_TZ,
+                timeMax=end_time.isoformat() + AMERICA_LOS_ANGELES_TZ,
+                maxResults=10,
+                singleEvents=True,
+                orderBy="startTime",
+                timeZone="America/Los_Angeles",
+            )
+            .execute()
+        )
+        events = events_result.get("items", [])
+        return len(events) == 0
+
+    def _create_event(
         self,
         summary: str,
         start_time: datetime,
@@ -85,9 +113,100 @@ class GoogleCalendar:
         print(f"Event created: {event.get('htmlLink')}")
         return event
 
-    def delete_event(self, event_id, calendar_id="primary"):
+    def _delete_event(self, event_id, calendar_id="primary"):
         self.service.events().delete(calendarId=calendar_id, eventId=event_id).execute()
         print(f"Event deleted: {event_id}")
+
+    def _get_events_with_attendee_email_n_prev_time(
+        self,
+        user_email: str,
+        min_time: datetime,
+        calendar_id="primary",
+    ) -> str:
+        """
+        return the event id, time, summary of the events with the given user_email
+        """
+        events_result = (
+            self.service.events()
+            .list(
+                calendarId=calendar_id,
+                timeMin=min_time.isoformat() + AMERICA_LOS_ANGELES_TZ,
+                singleEvents=True,
+                maxResults=10,
+                orderBy="startTime",
+                q=user_email,
+            )
+            .execute()
+        )
+
+        return [
+            {
+                "id": event["id"],
+                "start": event["start"],
+                "end": event["end"],
+                "summary": event["summary"],
+            }
+            for event in events_result.get("items", [])
+        ]
+
+    def booking_appointment(
+        self,
+        user_name: str,
+        user_email: str,
+        start_time: datetime,
+        end_time: datetime,
+    ) -> bool:
+        """
+        Book an appointment for the user
+        return True if the appointment is successfully booked
+        return False if the appointment is not available
+        """
+        is_available = self._is_available_at_time(start_time, end_time)
+        if not is_available:
+            return False
+        self._create_event(
+            summary=f"Appointment with {user_name}",
+            start_time=start_time,
+            end_time=end_time,
+            attendees=[{"email": user_email}],
+        )
+        return True
+
+    def check_availability(
+        self,
+        start_time: datetime,
+        end_time: datetime,
+    ) -> bool:
+        """
+        Check if the appointment is available
+        return True if the appointment is available
+        return False if the appointment is not available
+        """
+        return self._is_available_at_time(start_time, end_time)
+
+    def cancel_appointment(
+        self,
+        user_email: str,
+        prev_time: datetime,
+    ) -> bool:
+        """
+        Cancel the appointment
+        return True if the appointment is successfully cancelled
+        return False if the appointment is not found
+        # return the reservation if the time is not match
+        """
+        events = self._get_events_with_attendee_email_n_prev_time(
+            user_email=user_email, min_time=prev_time
+        )
+        if not events:
+            return False
+        else:
+            target_event = events[0]
+            try:
+                self._delete_event(target_event["id"])
+            except HttpError as error:
+                print(f"An error occurred: {error}")
+            return True
 
 
 def print_event(event):
@@ -98,12 +217,25 @@ def print_event(event):
 def main():
     try:
         google_calendar = GoogleCalendar()
-        events = google_calendar.get_events()
+        events = google_calendar._get_events()
         if not events:
             print("No upcoming events found.")
             return
         for event in events:
             print_event(event)
+
+        now = datetime.now()
+        end_time = now + timedelta(hours=1)  # 1 hour from now
+        print(now, end_time)
+        events = google_calendar._is_available_at_time(
+            start_time=now, end_time=end_time
+        )
+        print(events)
+
+        # get_events_with_attendee_email
+        events = google_calendar._get_events_with_attendee_email("svelagala@ucsd.edu")
+        print(events)
+        return
 
         # Create an event
         start_time = datetime.now()
