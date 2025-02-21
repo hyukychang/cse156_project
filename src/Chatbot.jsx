@@ -2,45 +2,38 @@ import { useState, useRef, useEffect } from "react";
 import "./Chatbot.css";
 
 const Chatbot = () => {
-  const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState([]); // Stores chat messages
+  const [input, setInput] = useState(""); // Stores user input
+  const [inputStorage, setInputStorage] = useState(""); // Saves the last user input
+
   const chatEndRef = useRef(null);
 
-  // Asynchronous function to fetch a response from the backend (currently mocked for UI improvement)
-  const fetchResponse = async (userInput) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve("Your request has been processed!");
-      }, 3000); // Respond after 3 seconds
-    });
+  const saveInput = async () => {
+    if (!input.trim()) return; // Ignore empty input
+
+    // Save user input
+    setInputStorage(input);
+    setMessages((prev) => [...prev, { sender: "user", text: input }]);
+    setInput(""); // Clear input field
+
+    // Display processing message
+    setMessages((prev) => [...prev, { sender: "bot", text: "Processing..." }]);
+
+    // Simulate backend response after 3 seconds
+    setTimeout(() => {
+      setMessages((prev) => [
+        ...prev.slice(0, -1), // Remove "Processing..." message
+        { sender: "bot", text: "Your request has been processed!" },
+      ]);
+    }, 3000);
   };
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
-
-    const userMessage = { sender: "user", text: input };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-
-    // Add processing message
-    const processingMessage = { sender: "bot", text: "Processing..." };
-    setMessages((prev) => [...prev, processingMessage]);
-
-    // Wait for 3 seconds before receiving the actual response
-    const botReply = await fetchResponse(userMessage.text);
-    
-    // Remove processing message and add actual response
-    setMessages((prev) => prev.slice(0, -1).concat({ sender: "bot", text: botReply }));
-  };
-
-  // Send message on Enter key press
   const handleKeyPress = (event) => {
     if (event.key === "Enter") {
-      sendMessage();
+      saveInput();
     }
   };
 
-  // Auto-scroll chat window to the latest message
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -64,7 +57,11 @@ const Chatbot = () => {
           onKeyPress={handleKeyPress}
           placeholder="Type a message..."
         />
-        <button onClick={sendMessage}>Send</button>
+        <button onClick={saveInput}>Send</button>
+      </div>
+
+      <div className="saved-input">
+        <strong>Saved Input:</strong> {inputStorage}
       </div>
     </div>
   );
