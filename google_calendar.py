@@ -1,6 +1,8 @@
 import os.path
 from datetime import datetime, timedelta
 
+from dateutil import parser
+from dateutil.relativedelta import FR, MO, SA, SU, TH, TU, WE, relativedelta
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -126,6 +128,7 @@ class GoogleCalendar:
         """
         return the event id, time, summary of the events with the given user_email
         """
+
         events_result = (
             self.service.events()
             .list(
@@ -149,63 +152,176 @@ class GoogleCalendar:
             for event in events_result.get("items", [])
         ]
 
+    def _parse_date(self, date_str: str) -> tuple[str, bool]:
+        today: datetime = datetime.today()
+
+        days_map = {
+            "monday": MO,
+            "tuesday": TU,
+            "wednesday": WE,
+            "thursday": TH,
+            "friday": FR,
+            "saturday": SA,
+            "sunday": SU,
+        }
+
+        date_str = date_str.lower().strip()
+
+        if date_str == "today":
+            return today.strftime("%Y-%m-%d"), True
+
+        if date_str == "tomorrow":
+            return (today + timedelta(days=1)).strftime("%Y-%m-%d"), True
+
+        if date_str.startswith("next "):
+            day_name = date_str.split("next ")[1]
+            if day_name in days_map:
+                target_date = today + relativedelta(weekday=days_map[day_name](+1))
+                return target_date.strftime("%Y-%m-%d"), True
+
+        if date_str.startswith("this "):
+            day_name = date_str.split("this ")[1]
+            if day_name in days_map:
+                target_weekday = days_map[day_name]
+                # If today is already the target day, return today's date
+                if today.weekday() == target_weekday.weekday:
+                    return today.strftime("%Y-%m-%d"), True
+                # Otherwise, find the next occurrence of the target day within the current week
+                target_date = today + relativedelta(weekday=target_weekday(0))
+                return target_date.strftime("%Y-%m-%d"), True
+
+        return "Invalid date format", False
+
+    def _parse_time(self, time_str: str) -> str:
+        try:
+            # Parse the input time string
+            time_obj = datetime.strptime(
+                time_str, "%I:%M %p"
+            )  # 12-hour format with AM/PM
+        except ValueError:
+            try:
+                # Handle incorrect PM format like "13:00 PM"
+                time_obj = datetime.strptime(
+                    time_str, "%H:%M %p"
+                )  # 24-hour with AM/PM (incorrect format)
+            except ValueError:
+                try:
+                    # Handle 24-hour format like "13:00"
+                    time_obj = datetime.strptime(time_str, "%H:%M")
+                except ValueError:
+                    return "Invalid time format"
+
+        # Convert to HH:MM:SS.mmmmmm format
+        return time_obj.strftime("%H:%M:%S.%f")
+
     def booking_appointment(
         self,
         user_name: str,
-        user_email: str,
-        start_time: datetime,
-        end_time: datetime,
+        time: str,
+        date: str,
+        user_email: str = None,
+        task: str = None,
     ) -> bool:
         """
         Book an appointment for the user
+        date can be
+        "today", "tomorrow", "next monday", "this friday", or "2025-02-27" format
+        time can be "10:00 AM" or "10:00 PM" or "13:00 PM" format
         return True if the appointment is successfully booked
         return False if the appointment is not available
         """
+        parsed_date, is_valid = self._parse_date(date)
+        if not is_valid:
+            return False
+
+        start_time = datetime.strptime(
+            parsed_date + self._parse_time(time), "%Y-%m-%d%H:%M:%S.%f"
+        )
+        end_time = start_time + timedelta(hours=1)
         is_available = self._is_available_at_time(start_time, end_time)
         if not is_available:
             return False
-        self._create_event(
-            summary=f"Appointment with {user_name}",
-            start_time=start_time,
-            end_time=end_time,
-            attendees=[{"email": user_email}],
-        )
+        if user_email:
+            self._create_event(
+                summary=f"{task}/{user_name}",
+                start_time=start_time,
+                end_time=end_time,
+                attendees=[{"email": user_email}],
+            )
+        else:
+            self._create_event(
+                summary=f"{task}/{user_name}",
+                start_time=start_time,
+                end_time=end_time,
+            )
         return True
 
     def check_availability(
         self,
-        start_time: datetime,
-        end_time: datetime,
+        date: str,
+        time: str,
     ) -> bool:
         """
         Check if the appointment is available
         return True if the appointment is available
         return False if the appointment is not available
         """
+        parsed_date, is_valid = self._parse_date(date)
+        if not is_valid:
+            return False
+        start_time = datetime.strptime(
+            parsed_date + self._parse_time(time), "%Y-%m-%d%H:%M:%S.%f"
+        )
+        end_time = start_time + timedelta(hours=1)
         return self._is_available_at_time(start_time, end_time)
 
     def cancel_appointment(
         self,
         user_email: str,
-        prev_time: datetime,
+        date: str,
+        prev_start_time: datetime,
     ) -> bool:
         """
         Cancel the appointment
+        for the date and prev_start_time, we cancel the appointment
+        which has the exact same start time
+
         return True if the appointment is successfully cancelled
         return False if the appointment is not found
         # return the reservation if the time is not match
         """
+        parsed_date, is_valid = self._parse_date(date)
+        if not is_valid:
+            return False
+        target_start_time = datetime.strptime(
+            parsed_date + self._parse_time(prev_start_time),
+            "%Y-%m-%d%H:%M:%S.%f",
+        )
+        min_time = (
+            target_start_time
+            + timedelta(hours=1)  # min_time is the end_time of the event
+            - timedelta(seconds=1)  # subtract 1 second to get the exact end time
+        )
+
         events = self._get_events_with_attendee_email_n_prev_time(
-            user_email=user_email, min_time=prev_time
+            user_email=user_email, min_time=min_time
         )
         if not events:
             return False
         else:
-            target_event = events[0]
-            try:
-                self._delete_event(target_event["id"])
-            except HttpError as error:
-                print(f"An error occurred: {error}")
+            target_event = None
+            for e in events:
+                if (
+                    e["start"]["dateTime"]
+                    == target_start_time.isoformat() + AMERICA_LOS_ANGELES_TZ
+                ):
+                    try:
+                        print(f"Deleting the event: {e}")
+                        self._delete_event(e["id"])
+                    except HttpError as error:
+                        print(f"An error occurred: {error}")
+                        return False
+                    break
             return True
 
 
@@ -276,5 +392,27 @@ def main():
         print(f"An error occurred: {error}")
 
 
+def final_main():
+    google_calendar = GoogleCalendar()
+    result = google_calendar.booking_appointment(
+        user_name="Sai",
+        time="6:00 PM",
+        date="today",
+    )
+    print(result)
+    result = google_calendar.cancel_appointment(
+        user_email="Sai",
+        date="today",
+        prev_start_time="5:00 PM",
+    )
+    print(result)
+    result = google_calendar.cancel_appointment(
+        user_email="Sai",
+        date="today",
+        prev_start_time="6:00 PM",
+    )
+    print(result)
+
+
 if __name__ == "__main__":
-    main()
+    final_main()
