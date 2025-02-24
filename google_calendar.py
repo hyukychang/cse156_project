@@ -192,7 +192,11 @@ class GoogleCalendar:
                 target_date = today + relativedelta(weekday=target_weekday(0))
                 return target_date.strftime("%Y-%m-%d"), True
 
-        return "Invalid date format", False
+        try:  # Check if the input date is in the format "YYYY-MM-DD"
+            target_date = parser.parse(date_str).date()
+            return target_date.strftime("%Y-%m-%d"), True
+        except ValueError:
+            return "Invalid date format", False
 
     def _parse_time(self, time_str: str) -> str:
         try:
@@ -234,6 +238,7 @@ class GoogleCalendar:
         """
         parsed_date, is_valid = self._parse_date(date)
         if not is_valid:
+            print("invalied date")
             return False
 
         start_time = datetime.strptime(
@@ -398,23 +403,24 @@ def main():
 def final_main():
     google_calendar = GoogleCalendar()
     result = google_calendar.booking_appointment(
-        user_name="Sai",
-        time="6:00 PM",
-        date="today",
+        user_name="Mary",
+        time="13:00 PM",
+        date="2025-02-27",
+        task="Hair Treatment",
     )
     print(result)
-    result = google_calendar.cancel_appointment(
-        user_email="Sai",
-        date="today",
-        prev_start_time="5:00 PM",
-    )
-    print(result)
-    result = google_calendar.cancel_appointment(
-        user_email="Sai",
-        date="today",
-        prev_start_time="6:00 PM",
-    )
-    print(result)
+    # result = google_calendar.cancel_appointment(
+    #     user_email="Sai",
+    #     date="today",
+    #     prev_start_time="5:00 PM",
+    # )
+    # print(result)
+    # result = google_calendar.cancel_appointment(
+    #     user_email="Sai",
+    #     date="today",
+    #     prev_start_time="6:00 PM",
+    # )
+    # print(result)
 
 
 if __name__ == "__main__":

@@ -21,7 +21,7 @@ def send_message_to_google_colab(message: str):
         }
     }
     """
-    colab_public_url = "https://4ecb-34-125-209-190.ngrok-free.app"
+    colab_public_url = "https://eecb-34-125-209-190.ngrok-free.app"
     colab_be_url = colab_public_url + "/chat"
     header = {
         "Content-Type": "application/json",
