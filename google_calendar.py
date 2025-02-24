@@ -9,30 +9,32 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import Resource, build
 from googleapiclient.errors import HttpError
 
-SCOPES = ["https://www.googleapis.com/auth/calendar"]
-TOKEN_FILE = "token.json"
-CREDENTIAL_FILE = "credentials.json"
-
-AMERICA_LOS_ANGELES_TZ = "-08:00"
-
 
 class GoogleCalendar:
     service: Resource = None
     credential = None
 
+    SCOPES = ["https://www.googleapis.com/auth/calendar"]
+    TOKEN_FILE = "token.json"
+    CREDENTIAL_FILE = "credentials.json"
+
+    AMERICA_LOS_ANGELES_TZ = "-08:00"
+
     def __init__(self):
         self.credential = None
-        if os.path.exists(TOKEN_FILE):
-            credential = Credentials.from_authorized_user_file(TOKEN_FILE, SCOPES)
+        if os.path.exists(self.TOKEN_FILE):
+            credential = Credentials.from_authorized_user_file(
+                self.TOKEN_FILE, self.SCOPES
+            )
         if not credential or not credential.valid:
             if credential and credential.expired and credential.refresh_token:
                 credential.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    CREDENTIAL_FILE, SCOPES
+                    self.CREDENTIAL_FILE, self.SCOPES
                 )
                 credential = flow.run_local_server(port=8080)
-            with open(TOKEN_FILE, "w") as token:
+            with open(self.TOKEN_FILE, "w") as token:
                 token.write(credential.to_json())
             self.credential = credential
 
@@ -75,8 +77,8 @@ class GoogleCalendar:
             self.service.events()
             .list(
                 calendarId="primary",
-                timeMin=start_time.isoformat() + AMERICA_LOS_ANGELES_TZ,
-                timeMax=end_time.isoformat() + AMERICA_LOS_ANGELES_TZ,
+                timeMin=start_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ,
+                timeMax=end_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ,
                 maxResults=10,
                 singleEvents=True,
                 orderBy="startTime",
@@ -133,7 +135,7 @@ class GoogleCalendar:
             self.service.events()
             .list(
                 calendarId=calendar_id,
-                timeMin=min_time.isoformat() + AMERICA_LOS_ANGELES_TZ,
+                timeMin=min_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ,
                 singleEvents=True,
                 maxResults=10,
                 orderBy="startTime",
@@ -313,16 +315,17 @@ class GoogleCalendar:
             for e in events:
                 if (
                     e["start"]["dateTime"]
-                    == target_start_time.isoformat() + AMERICA_LOS_ANGELES_TZ
+                    == target_start_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ
                 ):
                     try:
                         print(f"Deleting the event: {e}")
                         self._delete_event(e["id"])
+                        return True
                     except HttpError as error:
                         print(f"An error occurred: {error}")
                         return False
                     break
-            return True
+            return False
 
 
 def print_event(event):
