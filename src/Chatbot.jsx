@@ -6,24 +6,20 @@ import chatbotIcon from "./image/homeicon.png";
 import "./Chatbot.css";
 
 const Chatbot = () => {
-  const [input, setInput] = useState(""); 
+  const [input, setInput] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedHour, setSelectedHour] = useState("");
   const [selectedMinute, setSelectedMinute] = useState("");
   const [selectedAppointment, setSelectedAppointment] = useState("");
   const [name, setName] = useState("");
-  const [showOptions, setShowOptions] = useState(false); 
+  const [showOptions, setShowOptions] = useState(false);
   const navigate = useNavigate();
 
   const handleSend = () => {
-    if (!input.trim()) return; 
-    navigate("/response", { state: { userMessage: input } });
-  };
+    if (!input.trim()) return;
 
-  const handleKeyPress = (event) => {
-    if (event.key === "Enter") {
-      handleSend();
-    }
+    // 입력값을 ChatbotResponse로 전달
+    navigate("/response", { state: { userMessage: input } });
   };
 
   const handleSuggestionClick = (appointmentType) => {
@@ -55,7 +51,7 @@ const Chatbot = () => {
 
   const updateInput = (appointment, date, hour, minute, userName) => {
     if (appointment && date && hour && minute && userName) {
-      const formattedDate = date.toISOString().split("T")[0]; 
+      const formattedDate = date.toISOString().split("T")[0];
       const formattedTime = `${hour.split(/AM|PM/)[0]}:${minute} ${hour.includes("AM") ? "AM" : "PM"}`;
       setInput(`My name is ${userName}. I'd like to ${appointment.toLowerCase()} at ${formattedTime} on ${formattedDate}.`);
     }
@@ -84,30 +80,30 @@ const Chatbot = () => {
         {/* Options (Animated) */}
         {showOptions && (
           <div className="options-container fade-in">
-            <input 
-              type="text" 
-              placeholder="Enter your name" 
+            <input
+              type="text"
+              placeholder="Enter your name"
               className="name-input"
               value={name}
               onChange={handleNameChange}
             />
 
             <div className="date-time-picker">
-              <DatePicker 
-                selected={selectedDate} 
-                onChange={handleDateChange} 
-                dateFormat="yyyy-MM-dd" 
+              <DatePicker
+                selected={selectedDate}
+                onChange={handleDateChange}
+                dateFormat="yyyy-MM-dd"
                 placeholderText="Select a date"
                 className="date-picker"
                 popperPlacement="bottom-start"
               />
-              
+
               <select className="time-picker" value={selectedHour} onChange={handleHourChange}>
                 <option value="">Select hour</option>
                 {[...Array(12).keys()].map((h) => (
                   <>
-                    <option key={`${h+1}AM`} value={`${h+1}AM`}>{h+1} AM</option>
-                    <option key={`${h+1}PM`} value={`${h+1}PM`}>{h+1} PM</option>
+                    <option key={`${h + 1}AM`} value={`${h + 1}AM`}>{h + 1} AM</option>
+                    <option key={`${h + 1}PM`} value={`${h + 1}PM`}>{h + 1} PM</option>
                   </>
                 ))}
               </select>
@@ -142,20 +138,20 @@ const Chatbot = () => {
 
       {/* Chat Input */}
       <div className="chat-input-container">
-      <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault(); 
-            handleSend();
-          }
-        }}
-        placeholder="Type a message..."
-        className="chat-input"
-      />
-      <button className="chat-send-btn" onClick={handleSend}>➤</button>
-    </div>
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" && !event.shiftKey) {
+              event.preventDefault();
+              handleSend();
+            }
+          }}
+          placeholder="Type a message..."
+          className="chat-input"
+        />
+        <button className="chat-send-btn" onClick={handleSend}>➤</button>
+      </div>
     </div>
   );
 };

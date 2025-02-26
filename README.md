@@ -47,7 +47,7 @@ This is a React-based project built with Vite. The project includes various comp
 ## 📦 Installation & Setup
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/your-username/cse156_project.git
+   git clone https://github.com/hyukychang/cse156_project.git
    cd cse156_project
    ```
 
