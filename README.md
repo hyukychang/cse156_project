@@ -106,6 +106,12 @@ This project is licensed under the MIT License.
 
 - **Your Name** ([GitHub](https://github.com/your-username))
 
+## Install
+
+```
+pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib flask flask_cors
+```
+
 ## Google calender
 
 1. go to https://console.cloud.google.com/
@@ -113,3 +119,9 @@ This project is licensed under the MIT License.
 3. search the Google Calendar API and Enable
 4. check "External" in OAuth consent screen
 5. Then create credentials
+6. After you create your credentials click your add authorized redirect urls
+
+```
+http://localhost:8080/
+http://127.0.0.1:8080/
+```

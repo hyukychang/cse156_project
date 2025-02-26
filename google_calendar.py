@@ -22,6 +22,7 @@ class GoogleCalendar:
 
     def __init__(self):
         self.credential = None
+        credential = None
         if os.path.exists(self.TOKEN_FILE):
             credential = Credentials.from_authorized_user_file(
                 self.TOKEN_FILE, self.SCOPES
@@ -31,9 +32,20 @@ class GoogleCalendar:
                 credential.refresh(Request())
             else:
                 flow = InstalledAppFlow.from_client_secrets_file(
-                    self.CREDENTIAL_FILE, self.SCOPES
+                    self.CREDENTIAL_FILE,
+                    self.SCOPES,
                 )
-                credential = flow.run_local_server(port=8080)
+                # flow.authorization_url()
+                authorization_url, state = flow.authorization_url(
+                    # Enable offline access so that you can refresh an access token without
+                    # re-prompting the user for permission. Recommended for web server apps.
+                    access_type="offline",
+                    # Enable incremental authorization. Recommended as a best practice.
+                    include_granted_scopes="true",
+                )
+                credential = flow.run_local_server(
+                    port=8080, access_type="offline", prompt="consent"
+                )
             with open(self.TOKEN_FILE, "w") as token:
                 token.write(credential.to_json())
             self.credential = credential
@@ -316,7 +328,7 @@ class GoogleCalendar:
         if not events:
             return False
         else:
-            target_event = None
+            # target_event = None
             for e in events:
                 if (
                     e["start"]["dateTime"]
