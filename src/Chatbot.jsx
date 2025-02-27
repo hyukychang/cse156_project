@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -12,48 +12,61 @@ const Chatbot = () => {
   const [selectedMinute, setSelectedMinute] = useState("");
   const [selectedAppointment, setSelectedAppointment] = useState("");
   const [name, setName] = useState("");
+  const [service, setService] = useState("");
   const [showOptions, setShowOptions] = useState(false);
   const navigate = useNavigate();
+  const inputRef = useRef(null); 
 
   const handleSend = () => {
     if (!input.trim()) return;
-
-    // 입력값을 ChatbotResponse로 전달
     navigate("/response", { state: { userMessage: input } });
   };
 
   const handleSuggestionClick = (appointmentType) => {
     setSelectedAppointment(appointmentType);
-    updateInput(appointmentType, selectedDate, selectedHour, selectedMinute, name);
+    updateInput(appointmentType, selectedDate, selectedHour, selectedMinute, name, service);
   };
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
-    updateInput(selectedAppointment, date, selectedHour, selectedMinute, name);
+    updateInput(selectedAppointment, date, selectedHour, selectedMinute, name, service);
   };
 
   const handleHourChange = (event) => {
-    const hourValue = event.target.value;
-    setSelectedHour(hourValue);
-    updateInput(selectedAppointment, selectedDate, hourValue, selectedMinute, name);
+    setSelectedHour(event.target.value);
+    updateInput(selectedAppointment, selectedDate, event.target.value, selectedMinute, name, service);
   };
 
   const handleMinuteChange = (event) => {
-    const minuteValue = event.target.value;
-    setSelectedMinute(minuteValue);
-    updateInput(selectedAppointment, selectedDate, selectedHour, minuteValue, name);
+    setSelectedMinute(event.target.value);
+    updateInput(selectedAppointment, selectedDate, selectedHour, event.target.value, name, service);
   };
 
   const handleNameChange = (event) => {
     setName(event.target.value);
-    updateInput(selectedAppointment, selectedDate, selectedHour, selectedMinute, event.target.value);
+    updateInput(selectedAppointment, selectedDate, selectedHour, selectedMinute, event.target.value, service);
   };
 
-  const updateInput = (appointment, date, hour, minute, userName) => {
+  const handleServiceChange = (event) => {
+    setService(event.target.value);
+    updateInput(selectedAppointment, selectedDate, selectedHour, selectedMinute, name, event.target.value);
+  };
+
+ 
+  const updateInput = (appointment, date, hour, minute, userName, userService) => {
     if (appointment && date && hour && minute && userName) {
       const formattedDate = date.toISOString().split("T")[0];
       const formattedTime = `${hour.split(/AM|PM/)[0]}:${minute} ${hour.includes("AM") ? "AM" : "PM"}`;
-      setInput(`My name is ${userName}. I'd like to ${appointment.toLowerCase()} at ${formattedTime} on ${formattedDate}.`);
+
+      let message;
+      if (appointment === "check availability") {
+        message = `My name is ${userName}, and I'd like to check my availability at ${formattedTime} on ${formattedDate}.`;
+      } else {
+        message = `My name is ${userName}, and I'd like to ${appointment.toLowerCase()} a ${userService} appointment at ${formattedTime} on ${formattedDate}.`;
+      }
+
+      setInput(message);
+      setTimeout(() => inputRef.current?.focus(), 0); 
     }
   };
 
@@ -88,6 +101,16 @@ const Chatbot = () => {
               onChange={handleNameChange}
             />
 
+            {/* ✅ Enter your service button */}
+            <input
+              type="text"
+              placeholder="Enter your service"
+              className="name-input"
+              value={service}
+              onChange={handleServiceChange}
+              disabled={selectedAppointment === "check availability"}
+            />
+
             <div className="date-time-picker">
               <DatePicker
                 selected={selectedDate}
@@ -119,16 +142,16 @@ const Chatbot = () => {
             </div>
 
             <div className="chat-suggestions">
-              <button className="chat-suggestion" onClick={() => handleSuggestionClick("book an appointment")}>
+              <button className="chat-suggestion" onClick={() => handleSuggestionClick("book")}>
                 Book an appointment
               </button>
-              <button className="chat-suggestion" onClick={() => handleSuggestionClick("cancel an appointment")}>
+              <button className="chat-suggestion" onClick={() => handleSuggestionClick("cancel")}>
                 Cancel an appointment
               </button>
-              <button className="chat-suggestion" onClick={() => handleSuggestionClick("reschedule an appointment")}>
+              <button className="chat-suggestion" onClick={() => handleSuggestionClick("reschedule")}>
                 Reschedule an appointment
               </button>
-              <button className="chat-suggestion" onClick={() => handleSuggestionClick("check my availability")}>
+              <button className="chat-suggestion" onClick={() => handleSuggestionClick("check availability")}>
                 Check my availability
               </button>
             </div>
@@ -139,6 +162,7 @@ const Chatbot = () => {
       {/* Chat Input */}
       <div className="chat-input-container">
         <textarea
+          ref={inputRef} 
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(event) => {

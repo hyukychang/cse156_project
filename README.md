@@ -69,14 +69,15 @@ This is a React-based project built with Vite. The project includes various comp
 
 ## 📸 Screenshots
 ### 1️⃣ Homepage (Homepage.jsx, Homepage.css)
-![Homepage](src/screenshots/UI1.png)
+![Homepage](src/screenshots/U1.png)
+![Homepage](src/screenshots/U2.png)
 
 ### 2️⃣ Chatbot Interface (Chatbot.jsx, Chatbot.css)
-![Chatbot](src/screenshots/UI2.png)
-![Chatbot Response](src/screenshots/UI3.png)
+![Chatbot](src/screenshots/U3.png)
+![Chatbot Response](src/screenshots/U4.png)
 
 ### 3️⃣ Chatbot Response Component (ChatbotResponse.jsx, ChatbotResponse.css)
-![Chatbot Extra](src/screenshots/UI4.png)
+![Chatbot Extra](src/screenshots/U5.png)
 
 ## 🤝 Contribution Guidelines
 1. Fork the repository
