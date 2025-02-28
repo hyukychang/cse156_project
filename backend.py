@@ -21,7 +21,7 @@ def send_message_to_google_colab(message: str):
         }
     }
     """
-    colab_public_url = "https://eecb-34-125-209-190.ngrok-free.app"
+    colab_public_url = "https://51c7-35-234-164-239.ngrok-free.app"
     colab_be_url = colab_public_url + "/chat"
     header = {
         "Content-Type": "application/json",
@@ -62,7 +62,7 @@ def chat():
         result = gc.cancel_appointment(
             user_email=user_name,
             date=appointment_date,
-            time=appointment_time,
+            prev_start_time=appointment_time,
         )
         print(result)
     elif appointment_intent == "BookingAppointment":
@@ -83,5 +83,19 @@ def chat():
         print(result)
     else:
         print("Unknown intent")
+        result = "Unknown intent"
 
-    return f"<p>{user_message}</p>"
+    return jsonify(
+        {
+            "parsed_data": parsed_data,
+            "Result": result,
+            "User": user_name,
+            "Date": appointment_date,
+            "Time": appointment_time,
+            "Intent": appointment_intent,
+            "Task": appointment_task,
+        }
+    )
+
+
+# a = 1 if b == 3 else 3

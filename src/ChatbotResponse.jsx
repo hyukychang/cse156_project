@@ -1,10 +1,11 @@
 import { useLocation } from "react-router-dom";
 import { useState, useRef, useEffect, useCallback } from "react";
 import chatbotIcon from "./image/homeicon.png";
-import userIcon from "./image/user.png"; 
+import userIcon from "./image/user.png";
 import "./ChatbotResponse.css";
 
-const API_URL = "https://0d76-34-16-164-181.ngrok-free.app";
+const API_URL = "http://127.0.0.1:5000";
+// const API_URL = "https://0d76-34-16-164-181.ngrok-free.app";
 
 const ChatbotResponse = () => {
   const location = useLocation();
@@ -17,7 +18,6 @@ const ChatbotResponse = () => {
   const inputRef = useRef(null);
   const isFirstRender = useRef(true);
 
-  
   useEffect(() => {
     const chatbotElement = document.getElementById("chatbot-response");
     if (chatbotElement) chatbotElement.style.background = "white";
@@ -27,27 +27,48 @@ const ChatbotResponse = () => {
   }, []);
 
   const formatBotResponse = (data) => {
-    if (!data || !data.User || !data.Date || !data.Time || !data.Intent) {
+    if (
+      !data ||
+      !data.User ||
+      !data.Date ||
+      !data.Time ||
+      !data.Intent
+      // !data.Result
+    ) {
       return "⚠️ The server response is invalid. Please try again.";
     }
-
-    return `Your request has been confirmed! 🎉\n\n` + 
-           `Here’s your confirmed appointment:\n\n` +
-           `👤 Name: ${data.User}\n` +
-           `📅 Date: ${formatDate(data.Date)}\n` +
-           `⏰ Time: ${data.Time}\n` +
-           `📌 Service: ${data.Task}\n` +
-           `📝 Request Type: ${data.Intent}`;
+    var bool = Boolean(data.Result);
+    return bool
+      ? `Your request has been confirmed! 🎉\n\n` +
+          `Here’s your confirmed appointment:\n\n` +
+          `👤 Name: ${data.User}\n` +
+          `📅 Date: ${formatDate(data.Date)}\n` +
+          `⏰ Time: ${data.Time}\n` +
+          `📌 Service: ${data.Task}\n` +
+          `📝 Request Type: ${data.Intent}`
+      : `Sorry, we fail to reserve your reservation. Here is your reservation details:\n\n` +
+          `👤 Name: ${data.User}\n` +
+          `📅 Date: ${formatDate(data.Date)}\n` +
+          `⏰ Time: ${data.Time}\n` +
+          `📌 Service: ${data.Task}\n` +
+          `📝 Request Type: ${data.Intent}`;
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString + "T00:00:00");
-    return date.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
   };
 
   const handleBotResponse = useCallback(async (userInput) => {
     setIsBotResponding(true);
-    setMessages((prevMessages) => [...prevMessages, { text: userInput, sender: "user" }]);
+    setMessages((prevMessages) => [
+      ...prevMessages,
+      { text: userInput, sender: "user" },
+    ]);
 
     try {
       const res = await fetch(`${API_URL}/chat`, {
@@ -61,7 +82,10 @@ const ChatbotResponse = () => {
       const data = await res.json();
       const responseData = data.response || data;
 
-      setMessages((prevMessages) => [...prevMessages, { text: formatBotResponse(responseData), sender: "bot" }]);
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        { text: formatBotResponse(responseData), sender: "bot" },
+      ]);
     } catch (error) {
       setMessages((prevMessages) => [
         ...prevMessages,
@@ -121,7 +145,10 @@ const ChatbotResponse = () => {
                   alt={`${msg.sender} avatar`}
                   className="chat-avatar"
                 />
-                <div className={`response-message ${msg.sender}`} ref={index === messages.length - 1 ? lastMessageRef : null}>
+                <div
+                  className={`response-message ${msg.sender}`}
+                  ref={index === messages.length - 1 ? lastMessageRef : null}
+                >
                   <div style={{ whiteSpace: "pre-line" }}> {msg.text}</div>
                 </div>
               </div>
@@ -144,11 +171,17 @@ const ChatbotResponse = () => {
               }
             }}
             autoFocus
-            placeholder={isBotResponding ? "Waiting for response..." : "Type a message..."}
+            placeholder={
+              isBotResponding ? "Waiting for response..." : "Type a message..."
+            }
             className="response-chat-input"
             disabled={isBotResponding}
           />
-          <button className="response-chat-send-btn" onClick={handleSend} disabled={isBotResponding}>
+          <button
+            className="response-chat-send-btn"
+            onClick={handleSend}
+            disabled={isBotResponding}
+          >
             ➤
           </button>
         </div>
