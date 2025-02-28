@@ -1,0 +1,121 @@
+body {
+  --bg-color: linear-gradient(to right, #666668, #2b2020e0);
+  --text-color: white;
+  --button-bg: white;
+  --button-text: #161718;
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background 0.5s, color 0.5s;
+}
+
+body.light-mode {
+  --bg-color: linear-gradient(to right, #f0f0f0, #d8d8d8);
+  --text-color: black;
+  --h1-color: black;
+  --button-bg: white; 
+  --button-text: black; 
+}
+
+.homepage-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  background: var(--bg-color);
+  color: var(--text-color);
+  text-align: center;
+  font-family: Arial, sans-serif;
+  transition: background 0.5s ease-in-out, color 0.5s ease-in-out;
+}
+
+.top-left-navbar {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.top-left-icon {
+  width: 60px;
+  height: auto;
+}
+
+.top-left-text {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--text-color);
+}
+
+.animated-text {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  transition: opacity 1s ease-in-out;
+  color: var(--text-color);
+}
+
+.fade-in {
+  animation: fadeIn 1s ease-in-out forwards;
+}
+
+.fade-out {
+  animation: fadeOut 1s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.button-container button {
+  background-color: var(--button-bg); 
+  color: var(--button-text); 
+  border: none;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s, color 0.3s;
+}
+
+.button-container button:hover {
+  background-color: var(--button-bg);
+  color: var(--button-text);
+}
+
+.theme-toggle-btn {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.theme-icon {
+  width: 30px;
+  height: auto;
+  transition: transform 0.3s ease-in-out;
+}
+
+.theme-toggle-btn:hover .theme-icon {
+  transform: rotate(180deg);
+}
+
+.homepage-container h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  color: var(--h1-color); 
+  transition: none;
+}
