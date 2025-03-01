@@ -21,7 +21,7 @@ def send_message_to_google_colab(message: str):
         }
     }
     """
-    colab_public_url = "https://51c7-35-234-164-239.ngrok-free.app"
+    colab_public_url = "https://a2f0-35-198-247-188.ngrok-free.app"
     colab_be_url = colab_public_url + "/chat"
     header = {
         "Content-Type": "application/json",
@@ -53,11 +53,11 @@ def chat():
     appointment_date = parsed_data.get("Date", "")
     appointment_time = parsed_data.get("Time", "")
     appointment_task = parsed_data.get("Task", "")
-    appointment_intent = parsed_data.get("Intent", "")
+    appointment_intent = parsed_data.get("Intent", "").lower()
 
     gc = GoogleCalendar()
 
-    if appointment_intent == "CancelAppointment":
+    if "cancel" in appointment_intent:
         print("CancelAppointment")
         result = gc.cancel_appointment(
             user_email=user_name,
@@ -65,7 +65,7 @@ def chat():
             prev_start_time=appointment_time,
         )
         print(result)
-    elif appointment_intent == "BookingAppointment":
+    elif "book" in appointment_intent:
         print("BookingAppointment")
         result = gc.booking_appointment(
             user_name=user_name,
@@ -74,7 +74,7 @@ def chat():
             task=appointment_task,
         )
         print(result)
-    elif appointment_intent == "CheckAvailability":
+    elif "check" in appointment_intent:
         print("CheckAvailability")
         result = gc.check_availability(
             date=appointment_date,

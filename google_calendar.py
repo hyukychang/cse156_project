@@ -1,5 +1,6 @@
 import os.path
 from datetime import datetime, timedelta
+import pytz
 
 from dateutil import parser
 from dateutil.relativedelta import FR, MO, SA, SU, TH, TU, WE, relativedelta
@@ -314,26 +315,28 @@ class GoogleCalendar:
             return False
         target_start_time = datetime.strptime(
             parsed_date + self._parse_time(prev_start_time),
-            "%Y-%m-%d%H:%M:%S.%f",
+            "%Y-%m-%d%H:%M:%S.%f"
         )
-        min_time = (
-            target_start_time
-            + timedelta(hours=1)  # min_time is the end_time of the event
-            - timedelta(seconds=1)  # subtract 1 second to get the exact end time
-        )
-
         events = self._get_events_with_attendee_email_n_prev_time(
-            user_email=user_email, min_time=min_time
+            user_email=user_email, min_time=target_start_time - timedelta(hours=1)
         )
+        print(events)
         if not events:
             return False
         else:
             # target_event = None
             for e in events:
-                if (
-                    e["start"]["dateTime"]
-                    == target_start_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ
-                ):
+                # Define the timezone
+                los_angeles_tz = pytz.timezone("America/Los_Angeles")
+
+                # Localize the target start time to the correct timezone
+                print("start event", e["start"]["dateTime"])
+                print("target time", target_start_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ)
+                localized_target_time = los_angeles_tz.localize(target_start_time)
+                print("localized_time", localized_target_time.isoformat())
+
+                # Compare the timezone-aware times directly
+                if e["start"]["dateTime"] == localized_target_time.isoformat():
                     try:
                         print(f"Deleting the event: {e}")
                         self._delete_event(e["id"])
@@ -342,6 +345,7 @@ class GoogleCalendar:
                         print(f"An error occurred: {error}")
                         return False
                     break
+            print("anything else")
             return False
 
 
