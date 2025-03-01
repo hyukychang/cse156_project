@@ -53,11 +53,11 @@ def chat():
     appointment_date = parsed_data.get("Date", "")
     appointment_time = parsed_data.get("Time", "")
     appointment_task = parsed_data.get("Task", "")
-    appointment_intent = parsed_data.get("Intent", "").lower()
+    appointment_intent = parsed_data.get("Intent", "")
 
     gc = GoogleCalendar()
 
-    if "cancel" in appointment_intent:
+    if "cancel" in appointment_intent.lower():
         print("CancelAppointment")
         result = gc.cancel_appointment(
             user_email=user_name,
@@ -65,7 +65,7 @@ def chat():
             prev_start_time=appointment_time,
         )
         print(result)
-    elif "book" in appointment_intent:
+    elif "book" in appointment_intent.lower():
         print("BookingAppointment")
         result = gc.booking_appointment(
             user_name=user_name,
@@ -74,7 +74,7 @@ def chat():
             task=appointment_task,
         )
         print(result)
-    elif "check" in appointment_intent:
+    elif "check" in appointment_intent.lower():
         print("CheckAvailability")
         result = gc.check_availability(
             date=appointment_date,

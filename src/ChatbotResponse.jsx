@@ -54,13 +54,31 @@ const ChatbotResponse = () => {
           `📝 Request Type: ${data.Intent}`;
   };
 
+  // const formatDate = (dateString) => {
+  //   const date = new Date(dateString + "T00:00:00");
+  //   return date.toLocaleDateString("en-US", {
+  //     year: "numeric",
+  //     month: "long",
+  //     day: "numeric",
+  //   });
+  // };
+
   const formatDate = (dateString) => {
-    const date = new Date(dateString + "T00:00:00");
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+    try {
+      const date = new Date(dateString + "T00:00:00");
+      if (isNaN(date.getTime())) {
+        // If the date is invalid, return the original dateString
+        return dateString;
+      }
+      return date.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch (error) {
+      // In case of any unexpected errors, return the original dateString
+      return dateString;
+    }
   };
 
   const handleBotResponse = useCallback(async (userInput) => {

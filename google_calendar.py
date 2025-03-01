@@ -320,7 +320,6 @@ class GoogleCalendar:
         events = self._get_events_with_attendee_email_n_prev_time(
             user_email=user_email, min_time=target_start_time - timedelta(hours=1)
         )
-        print(events)
         if not events:
             return False
         else:
@@ -330,10 +329,7 @@ class GoogleCalendar:
                 los_angeles_tz = pytz.timezone("America/Los_Angeles")
 
                 # Localize the target start time to the correct timezone
-                print("start event", e["start"]["dateTime"])
-                print("target time", target_start_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ)
                 localized_target_time = los_angeles_tz.localize(target_start_time)
-                print("localized_time", localized_target_time.isoformat())
 
                 # Compare the timezone-aware times directly
                 if e["start"]["dateTime"] == localized_target_time.isoformat():
@@ -345,7 +341,6 @@ class GoogleCalendar:
                         print(f"An error occurred: {error}")
                         return False
                     break
-            print("anything else")
             return False
 
 
