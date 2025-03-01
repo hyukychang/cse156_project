@@ -42,9 +42,10 @@ This is a React-based project built with Vite. The project includes various comp
   - go to https://console.cloud.google.com/-
   - select the project (if you don't have a project create new project)
   - search the Google Calendar API and Enable
-  - heck "External" in OAuth consent screen
-  - Then create credentials
-  - After you create your credentials click your add authorized redirect urls
+  - Check "External" in OAuth consent screen on the left side of the screen
+  - Click "Credentials" and "Create Credentials" - OAuth client ID
+  - Application time for the OAuth client ID will be "Web application"
+  - After you create your credentials click your add authorized redirect urls and copy and post these two links below
   
   ```
   http://localhost:8080/
