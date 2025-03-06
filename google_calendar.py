@@ -233,7 +233,7 @@ class GoogleCalendar:
                 )
 
         try:  # Check if the input date is in the format "YYYY-MM-DD"
-            target_date = parser.parse(date_str).date()
+            target_date = parser.parse(date_str, fuzzy=True).date()
             return target_date.strftime("%Y-%m-%d"), True
         except ValueError:
             return "Invalid date format", False
