@@ -2,11 +2,11 @@
 
 ## ✨ Author
 
-- **Seunghyuk Chang** ([GitHub](https://github.com/your-username))
-- **Lina Battikha** 
-- **Kurumi Kaneko**
-- **Jiho Kim**
-- **Shreya Velagala**
+- **[Seunghyuk Chang](https://github.com/hyukychang)**
+- **[Lina Battikha](https://github.com/linabat)**
+- **[Kurumi Kaneko](https://github.com/kurumigithub)**
+- **[Jiho Kim](https://github.com/jiho-98)**
+- **[Shreya Velagala](https://github.com/ShreyaVelagala)**
 
 ## 📌 Project Overview
 
@@ -30,7 +30,7 @@ This is a React-based project built with Vite. The project includes various comp
 2. **Install Dependencies:**
 
    ```
-   pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib flask flask_cors
+   pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib flask flask_cors inflect
    ```
 
    ```bash
@@ -39,24 +39,24 @@ This is a React-based project built with Vite. The project includes various comp
 
 3. **Set up Google Calendar API**
 
-  - go to https://console.cloud.google.com/-
-  - select the project (if you don't have a project create new project)
-  - search the Google Calendar API and Enable
-  - Check "External" in OAuth consent screen on the left side of the screen
-  - Click "Credentials" and "Create Credentials" - OAuth client ID
-  - Application time for the OAuth client ID will be "Web application"
-  - After you create your credentials click your add authorized redirect urls and copy and post these two links below
-  
-  ```
-  http://localhost:8080/
-  http://127.0.0.1:8080/
-  ```
+- go to https://console.cloud.google.com/-
+- select the project (if you don't have a project create new project)
+- search the Google Calendar API and Enable
+- Check "External" in OAuth consent screen on the left side of the screen
+- Click "Credentials" and "Create Credentials" - OAuth client ID
+- Application time for the OAuth client ID will be "Web application"
+- After you create your credentials click your add authorized redirect urls and copy and post these two links below
+
+```
+http://localhost:8080/
+http://127.0.0.1:8080/
+```
 
 4. **Start the Development Server (Google Colab Backend)**
 
-  - Run the google colab on T4 GPU
-  - copy the public url to backend.py
-   
+- Run the google colab on T4 GPU
+- copy the public url to backend.py
+
 5. **Start the Development Server (VS Code Backend)**
 
    ```
