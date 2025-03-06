@@ -1,7 +1,9 @@
 import os.path
+import re
 from datetime import datetime, timedelta
-import pytz
 
+import inflect
+import pytz
 from dateutil import parser
 from dateutil.relativedelta import FR, MO, SA, SU, TH, TU, WE, relativedelta
 from google.auth.transport.requests import Request
@@ -205,6 +207,31 @@ class GoogleCalendar:
                 target_date = today + relativedelta(weekday=target_weekday(0))
                 return target_date.strftime("%Y-%m-%d"), True
 
+        p = inflect.engine()
+        word_to_digits: dict = {p.number_to_words(i): i for i in range(1, 100)}
+        date_str_copy = date_str
+        for word, digit in word_to_digits.items():
+            if f"{word}" in date_str_copy:
+                date_str_copy = date_str_copy.replace(f"{word}", f"{digit}")
+                break
+        # match (in) # units
+        print(date_str_copy)
+        match = re.match(r"(?:in\s*)?(\d+)\s+(day|days|month|months)", date_str_copy)
+        if match:
+            num_units, unit = match.groups()
+            if unit == "day" or unit == "days":
+                return (today + timedelta(days=int(num_units))).strftime(
+                    "%Y-%m-%d"
+                ), True
+            elif unit == "month" or unit == "months":
+                return (today + relativedelta(months=int(num_units))).strftime(
+                    "%Y-%m-%d"
+                ), True
+            else:
+                print(
+                    f'{date_str_copy}({date_str}) can not parsed into "(in) # units" format'
+                )
+
         try:  # Check if the input date is in the format "YYYY-MM-DD"
             target_date = parser.parse(date_str).date()
             return target_date.strftime("%Y-%m-%d"), True
@@ -314,8 +341,7 @@ class GoogleCalendar:
         if not is_valid:
             return False
         target_start_time = datetime.strptime(
-            parsed_date + self._parse_time(prev_start_time),
-            "%Y-%m-%d%H:%M:%S.%f"
+            parsed_date + self._parse_time(prev_start_time), "%Y-%m-%d%H:%M:%S.%f"
         )
         events = self._get_events_with_attendee_email_n_prev_time(
             user_email=user_email, min_time=target_start_time - timedelta(hours=1)
@@ -416,7 +442,7 @@ def final_main():
     result = google_calendar.booking_appointment(
         user_name="Mary",
         time="13:00 PM",
-        date="2025-02-27",
+        date="in one month",
         task="Hair Treatment",
     )
     print(result)
