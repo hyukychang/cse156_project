@@ -193,3 +193,17 @@
 .message-container.bot .chat-avatar {
   margin-right: 10px;
 }
+
+@keyframes dots-animation {
+  0% { content: "."; transform: scale(1); }
+  25% { content: ".."; transform: scale(1.2); }
+  50% { content: "..."; transform: scale(1.5); }
+}
+
+.loading .loading-dots::after {
+  content: ".";
+  display: inline-block;
+  font-weight: bold;
+  font-size: 18px;  
+  animation: dots-animation 1.5s infinite ease-in-out;
+}

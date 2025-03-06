@@ -44,13 +44,13 @@ const Homepage = () => {
 
   return (
     <div className={`homepage-container ${isDarkMode ? "dark" : "light"}`}>
-      {/* 좌측 상단 네비게이션 */}
+      
       <div className="top-left-navbar">
         <img src={chatbotIcon} alt="Chatbot Icon" className="top-left-icon" />
         <span className="top-left-text">Chatbot UI</span>
       </div>
 
-      {/* 중앙 컨텐츠 */}
+ 
       <div className="homepage-content">
         <h1>Chat Bot</h1>
         <h2 className={`animated-text ${fade}`}>{texts[index]}</h2>

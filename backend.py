@@ -21,7 +21,7 @@ def send_message_to_google_colab(message: str):
         }
     }
     """
-    colab_public_url = "https://a2f0-35-198-247-188.ngrok-free.app"
+    colab_public_url = "https://9345-34-124-243-163.ngrok-free.app"
     colab_be_url = colab_public_url + "/chat"
     header = {
         "Content-Type": "application/json",
@@ -96,6 +96,5 @@ def chat():
             "Task": appointment_task,
         }
     )
-
 
 # a = 1 if b == 3 else 3
