@@ -83,7 +83,7 @@ const ChatbotResponse = () => {
       setMessages((prevMessages) =>
         prevMessages
           .filter((msg) => !msg.isLoading)
-          .concat({ text: "⚠️ Server connection failed.", sender: "bot" })
+          .concat({ text: "⚠️ Missing Information: Make sure you have both date and time.", sender: "bot" })
       );
     } finally {
       setIsBotResponding(false);

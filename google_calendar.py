@@ -87,21 +87,46 @@ class GoogleCalendar:
         print(events)
         return events
 
+    # def _is_available_at_time(self, start_time: datetime, end_time: datetime) -> bool:
+    #     events_result = (
+    #         self.service.events()
+    #         .list(
+    #             calendarId="primary",
+    #             timeMin=start_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ,
+    #             timeMax=end_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ,
+    #             maxResults=10,
+    #             singleEvents=True,
+    #             orderBy="startTime",
+    #             timeZone="America/Los_Angeles",
+    #         )
+    #         .execute()
+    #     )
+    #     events = events_result.get("items", [])
+    #     print("events", events)
+    #     return len(events) == 0
+
+
+
     def _is_available_at_time(self, start_time: datetime, end_time: datetime) -> bool:
+        # Ensure start_time and end_time are timezone-aware
+        pacific_tz = pytz.timezone("America/Los_Angeles")
+        start_time = start_time.astimezone(pacific_tz)
+        end_time = end_time.astimezone(pacific_tz)
+
         events_result = (
             self.service.events()
             .list(
                 calendarId="primary",
-                timeMin=start_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ,
-                timeMax=end_time.isoformat() + self.AMERICA_LOS_ANGELES_TZ,
-                maxResults=10,
+                timeMin=start_time.isoformat(),
+                timeMax=end_time.isoformat(),
                 singleEvents=True,
                 orderBy="startTime",
-                timeZone="America/Los_Angeles",
             )
             .execute()
         )
+
         events = events_result.get("items", [])
+        print("events:", events)  # Debugging statement, remove in production
         return len(events) == 0
 
     def _create_event(
@@ -286,7 +311,11 @@ class GoogleCalendar:
         )
         end_time = start_time + timedelta(hours=1)
         is_available = self._is_available_at_time(start_time, end_time)
-        if not is_available:
+        print(is_available)
+        # if not is_available:
+        #     return False
+        if is_available == False:
+            print("hit")
             return False
         if user_email:
             self._create_event(
